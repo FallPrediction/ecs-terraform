@@ -62,3 +62,41 @@ variable "db_username" {
   type        = string
   description = "RDS Username"
 }
+
+variable "app_key" {
+  type      = string
+  sensitive = true
+}
+
+variable "ecs_instance_type" {
+  type        = string
+  description = "Small ECS container instance type for production."
+}
+
+variable "asg_min_size" {
+  type        = number
+  description = "Minimum ECS ASG size. Set to 2 for higher availability."
+  default     = 1
+}
+
+variable "asg_max_size" {
+  type        = number
+  description = "Maximum ECS ASG size."
+  default     = 3
+
+  validation {
+    condition     = var.asg_max_size >= 1
+    error_message = "asg_max_size must be at least 1."
+  }
+}
+
+variable "asg_desired_capacity" {
+  type        = number
+  description = "Desired ECS ASG capacity."
+  default     = 2
+
+  validation {
+    condition     = var.asg_desired_capacity >= var.asg_min_size && var.asg_desired_capacity <= var.asg_max_size
+    error_message = "ecs_desired_capacity must be between asg_min_size and asg_max_size."
+  }
+}
