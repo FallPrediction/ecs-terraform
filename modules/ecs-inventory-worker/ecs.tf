@@ -69,6 +69,20 @@ resource "aws_ecs_task_definition" "inventory_worker" {
   ])
 }
 
+resource "aws_ecs_capacity_provider" "inventory_worker_on_demand" {
+  name = "${var.service_name}-${var.environment}-capacity-provider-api-on-demand"
+
+  auto_scaling_group_provider {
+    auto_scaling_group_arn         = aws_autoscaling_group.inventory_worker_on_demand.arn
+    managed_termination_protection = "ENABLED" # See https://github.com/terraform-aws-modules/terraform-aws-ecs/blob/master/modules/cluster/README.md
+
+    managed_scaling {
+      status          = "ENABLED" # See https://github.com/terraform-aws-modules/terraform-aws-ecs/blob/master/modules/cluster/README.md
+      target_capacity = 100       # 盡量讓 Instance 滿載任務
+    }
+  }
+}
+
 resource "aws_ecs_service" "inventory_worker" {
   name            = "${var.service_name}-${var.environment}-inventory-worker"
   cluster         = var.cluster_id
@@ -76,15 +90,15 @@ resource "aws_ecs_service" "inventory_worker" {
   desired_count   = var.inventory_worker_desired_count
 
   capacity_provider_strategy {
-    capacity_provider = var.capacity_provider_on_demand_name
-    weight            = 0
+    capacity_provider = aws_ecs_capacity_provider.inventory_worker_on_demand.name
     base              = 1 # 前 X 個為 on_demand
+    weight            = 1 # 超過 X 個 spot 跟 on-demand 平均
   }
 
   capacity_provider_strategy {
     capacity_provider = var.capacity_provider_spot_name
-    weight            = 1 # 超過 X 個全部用 spot
     base              = 0
+    weight            = 1 # 超過 X 個 spot 跟 on-demand 平均
   }
 
   network_configuration {
