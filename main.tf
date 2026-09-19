@@ -110,7 +110,7 @@ module "ecs-api" {
   capacity_provider_spot_name = module.ecs.capacity_provider_spot_name
   private_subnet_ids          = module.vpc.private_subnet_ids
   nginx_image                 = var.nginx_image
-  ecs_security_group_id       = module.ecs.ecs_security_group_id
+  ecs_security_group_id       = module.ecs.ecs_api_security_group_id
   vpc_id                      = module.vpc.vpc_id
   public_subnet_ids           = module.vpc.public_subnet_ids
   launch_template_id          = module.ecs.launch_template_id
