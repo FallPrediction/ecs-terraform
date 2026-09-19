@@ -10,7 +10,6 @@ terraform {
 }
 
 provider "aws" {
-  alias  = "ap-east-2"
   region = var.aws_region
 
   default_tags {
@@ -31,10 +30,6 @@ module "vpc" {
   ssh_allowed_cidr      = var.ssh_allowed_cidr
   bastion_instance_type = var.bastion_instance_type
   nat_instance_type     = var.nat_instance_type
-
-  providers = {
-    aws = aws.ap-east-2
-  }
 }
 
 module "rds" {
@@ -46,10 +41,6 @@ module "rds" {
   db_password  = var.db_password
   db_name      = var.db_name
   db_username  = var.db_username
-
-  providers = {
-    aws = aws.ap-east-2
-  }
 }
 
 module "efs" {
@@ -59,10 +50,6 @@ module "efs" {
   environment        = var.environment
   vpc_id             = module.vpc.vpc_id
   private_subnet_ids = module.vpc.private_subnet_ids
-
-  providers = {
-    aws = aws.ap-east-2
-  }
 }
 
 module "elasticache" {
@@ -72,10 +59,6 @@ module "elasticache" {
   environment        = var.environment
   vpc_id             = module.vpc.vpc_id
   private_subnet_ids = module.vpc.private_subnet_ids
-
-  providers = {
-    aws = aws.ap-east-2
-  }
 
   depends_on = [
     module.vpc
@@ -101,10 +84,6 @@ module "ecs" {
   redis_primary_address     = module.elasticache.redis_primary_address
   app_key                   = var.app_key
   ecs_instance_type         = var.ecs_instance_type
-
-  providers = {
-    aws = aws.ap-east-2
-  }
 
   depends_on = [
     module.vpc,
@@ -143,10 +122,6 @@ module "ecs-api" {
   api_desired_count           = var.api_desired_count
   api_max_count               = var.api_desired_count < var.api_max_count ? var.api_max_count : var.api_desired_count
 
-  providers = {
-    aws = aws.ap-east-2
-  }
-
   depends_on = [
     module.vpc,
     module.efs,
@@ -177,10 +152,6 @@ module "ecs-inventory-worker" {
   inventory_worker_asg_desired_capacity = var.inventory_worker_asg_desired_capacity
   inventory_worker_desired_count        = var.inventory_worker_desired_count
   inventory_worker_max_count            = var.inventory_worker_desired_count < var.inventory_worker_max_count ? var.inventory_worker_max_count : var.inventory_worker_desired_count
-
-  providers = {
-    aws = aws.ap-east-2
-  }
 
   depends_on = [
     module.vpc,
