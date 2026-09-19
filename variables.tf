@@ -73,31 +73,59 @@ variable "ecs_instance_type" {
   description = "Small ECS container instance type for production."
 }
 
-variable "asg_min_size" {
+variable "api_asg_min_size" {
   type        = number
-  description = "Minimum ECS ASG size. Set to 2 for higher availability."
+  description = "Minimum API ECS ASG size. Set to 2 for higher availability."
   default     = 1
 }
 
-variable "asg_max_size" {
+variable "api_asg_max_size" {
   type        = number
-  description = "Maximum ECS ASG size."
+  description = "Maximum API ECS ASG size."
   default     = 3
 
   validation {
-    condition     = var.asg_max_size >= 1
-    error_message = "asg_max_size must be at least 1."
+    condition     = var.api_asg_max_size >= 1
+    error_message = "api_asg_max_size must be at least 1."
   }
 }
 
-variable "asg_desired_capacity" {
+variable "api_asg_desired_capacity" {
   type        = number
-  description = "Desired ECS ASG capacity."
+  description = "Desired API ECS ASG capacity."
   default     = 2
 
   validation {
-    condition     = var.asg_desired_capacity >= var.asg_min_size && var.asg_desired_capacity <= var.asg_max_size
-    error_message = "ecs_desired_capacity must be between asg_min_size and asg_max_size."
+    condition     = var.api_asg_desired_capacity >= var.api_asg_min_size && var.api_asg_desired_capacity <= var.api_asg_max_size
+    error_message = "api_asg_desired_capacity must be between api_asg_min_size and api_asg_max_size."
+  }
+}
+
+variable "inventory_worker_asg_min_size" {
+  type        = number
+  description = "Minimum inventory worker ECS ASG size. Set to 2 for higher availability."
+  default     = 1
+}
+
+variable "inventory_worker_asg_max_size" {
+  type        = number
+  description = "Maximum inventory worker ECS ASG size."
+  default     = 3
+
+  validation {
+    condition     = var.inventory_worker_asg_max_size >= 1
+    error_message = "inventory_worker_asg_max_size must be at least 1."
+  }
+}
+
+variable "inventory_worker_asg_desired_capacity" {
+  type        = number
+  description = "Desired inventory worker ECS ASG capacity."
+  default     = 2
+
+  validation {
+    condition     = var.inventory_worker_asg_desired_capacity >= var.inventory_worker_asg_min_size && var.inventory_worker_asg_desired_capacity <= var.inventory_worker_asg_max_size
+    error_message = "inventory_worker_asg_desired_capacity must be between inventory_worker_asg_min_size and inventory_worker_asg_max_size."
   }
 }
 
@@ -130,7 +158,6 @@ variable "inventory_worker_desired_count" {
 }
 
 variable "inventory_worker_max_count" {
-  type        = number
-  description = "Max inventory queue worker ECS service task count. Must higher than api_desired_count."
-  default     = 2
+  type    = number
+  default = 2
 }
