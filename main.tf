@@ -51,3 +51,16 @@ module "rds" {
     aws = aws.ap-east-2
   }
 }
+
+module "efs" {
+  source = "./modules/efs"
+
+  service_name       = var.service_name
+  environment        = var.environment
+  vpc_id             = module.vpc.vpc_id
+  private_subnet_ids = module.vpc.private_subnet_ids
+
+  providers = {
+    aws = aws.ap-east-2
+  }
+}
