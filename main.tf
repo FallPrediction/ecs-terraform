@@ -191,6 +191,30 @@ module "ecs-general-worker" {
   ]
 }
 
+module "ecs-schedule" {
+  source = "./modules/ecs-schedule"
+
+  service_name                        = var.service_name
+  environment                         = var.environment
+  aws_region                          = var.aws_region
+  efs_id                              = module.efs.efs_id
+  efs_access_point_id                 = module.efs.efs_access_point_id
+  laravel_image                       = var.laravel_image
+  task_execution_role_arn             = module.ecs.task_execution_role_arn
+  task_role_arn                       = module.ecs.task_role_arn
+  laravel_env_arn                     = module.ecs.laravel_env_arn
+  cluster_id                          = module.ecs.cluster_id
+  private_subnet_ids                  = module.vpc.private_subnet_ids
+  launch_template_id                  = module.ecs.launch_template_id
+  ecs_security_group_id               = module.ecs.ecs_security_group_id
+
+  depends_on = [
+    module.vpc,
+    module.efs,
+    module.ecs
+  ]
+}
+
 # 關聯 cluster 和 capacity provider
 resource "aws_ecs_cluster_capacity_providers" "cluster_capacity_providers" {
   cluster_name = module.ecs.cluster_name
@@ -199,6 +223,7 @@ resource "aws_ecs_cluster_capacity_providers" "cluster_capacity_providers" {
     module.ecs-api.api_capacity_provider_name,
     module.ecs-inventory-worker.inventory_worker_capacity_provider_name,
     module.ecs-general-worker.general_worker_capacity_provider_name,
+    module.ecs-schedule.schedule_capacity_provider_name,
     module.ecs.capacity_provider_spot_name
   ]
 }
