@@ -153,3 +153,35 @@ module "ecs-api" {
     module.ecs
   ]
 }
+
+module "ecs-inventory-worker" {
+  source = "./modules/ecs-inventory-worker"
+
+  service_name                     = var.service_name
+  environment                      = var.environment
+  aws_region                       = var.aws_region
+  efs_id                           = module.efs.efs_id
+  efs_access_point_id              = module.efs.efs_access_point_id
+  laravel_image                    = var.laravel_image
+  task_execution_role_arn          = module.ecs.task_execution_role_arn
+  task_role_arn                    = module.ecs.task_role_arn
+  laravel_env_arn                  = module.ecs.laravel_env_arn
+  cluster_id                       = module.ecs.cluster_id
+  cluster_name                     = module.ecs.cluster_name
+  capacity_provider_on_demand_name = module.ecs.capacity_provider_on_demand_name
+  capacity_provider_spot_name      = module.ecs.capacity_provider_spot_name
+  private_subnet_ids               = module.vpc.private_subnet_ids
+  ecs_security_group_id            = module.ecs.ecs_security_group_id
+  inventory_worker_desired_count   = var.inventory_worker_desired_count
+  inventory_worker_max_count       = var.inventory_worker_desired_count < var.inventory_worker_max_count ? var.inventory_worker_max_count : var.inventory_worker_desired_count
+
+  providers = {
+    aws = aws.ap-east-2
+  }
+
+  depends_on = [
+    module.vpc,
+    module.efs,
+    module.ecs
+  ]
+}

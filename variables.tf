@@ -122,3 +122,15 @@ variable "api_max_count" {
   description = "Max API ECS service task count. Must higher than api_desired_count."
   default     = 3
 }
+
+variable "inventory_worker_desired_count" {
+  type        = number
+  description = "Desired ECS task count for the inventory queue worker."
+  default     = 1
+}
+
+variable "inventory_worker_max_count" {
+  type        = number
+  description = "Max inventory queue worker ECS service task count. Must higher than api_desired_count."
+  default     = 2
+}
