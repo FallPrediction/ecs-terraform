@@ -101,12 +101,6 @@ variable "api_asg_desired_capacity" {
   }
 }
 
-variable "inventory_worker_asg_min_size" {
-  type        = number
-  description = "Minimum inventory worker ECS ASG size. Set to 2 for higher availability."
-  default     = 1
-}
-
 variable "inventory_worker_asg_max_size" {
   type        = number
   description = "Maximum inventory worker ECS ASG size."
@@ -121,12 +115,6 @@ variable "inventory_worker_asg_max_size" {
 variable "inventory_worker_asg_desired_capacity" {
   type        = number
   description = "Desired inventory worker ECS ASG capacity."
-  default     = 2
-
-  validation {
-    condition     = var.inventory_worker_asg_desired_capacity >= var.inventory_worker_asg_min_size && var.inventory_worker_asg_desired_capacity <= var.inventory_worker_asg_max_size
-    error_message = "inventory_worker_asg_desired_capacity must be between inventory_worker_asg_min_size and inventory_worker_asg_max_size."
-  }
 }
 
 variable "laravel_image" {
@@ -160,10 +148,6 @@ variable "inventory_worker_desired_count" {
 variable "inventory_worker_max_count" {
   type    = number
   default = 2
-}
-
-variable "general_worker_asg_min_size" {
-  type = number
 }
 
 variable "general_worker_asg_max_size" {

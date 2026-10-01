@@ -71,10 +71,6 @@ variable "ecs_security_group_id" {
   type = string
 }
 
-variable "inventory_worker_asg_min_size" {
-  type = number
-}
-
 variable "inventory_worker_asg_max_size" {
   type = number
 }

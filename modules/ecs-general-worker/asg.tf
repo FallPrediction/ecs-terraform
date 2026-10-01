@@ -1,7 +1,7 @@
 resource "aws_autoscaling_group" "general_worker_on_demand" {
   name                = "${var.service_name}-${var.environment}-ecs-asg-general-worker-on-demand"
   vpc_zone_identifier = var.private_subnet_ids
-  min_size            = var.general_worker_asg_min_size
+  min_size            = 0
   max_size            = var.general_worker_asg_max_size
   desired_capacity    = var.general_worker_asg_desired_capacity
   metrics_granularity = "1Minute" # Enable GroupInServiceInstances metric
