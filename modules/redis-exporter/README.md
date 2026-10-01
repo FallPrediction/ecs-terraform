@@ -1,0 +1,1 @@
+Note that the Cloud Watch agent will automatically create a cloudwatch log group named `/aws/ecs/containerinsights/${var.cluster_name}/performance`. Please edit the `retention_in_days` setting after creation.
