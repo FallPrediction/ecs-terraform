@@ -11,7 +11,7 @@ resource "aws_autoscaling_group" "api_on_demand" {
   # instance scale-in protection，避免 ECS 正在使用的 instance 被 ASG 終止。
   protect_from_scale_in = true
 
-  health_check_type         = "ELB"
+  health_check_type         = "EC2"
   health_check_grace_period = 60 # 給予 1 分鐘緩衝讓 ECS Agent 啟動
 
   launch_template {
