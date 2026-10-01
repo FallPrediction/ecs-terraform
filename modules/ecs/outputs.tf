@@ -30,20 +30,16 @@ output "cluster_name" {
   value = aws_ecs_cluster.app.name
 }
 
-output "capacity_provider_on_demand_name" {
-  value = aws_ecs_capacity_provider.on_demand.name
-}
-
 output "capacity_provider_spot_name" {
   value = aws_ecs_capacity_provider.spot.name
-}
-
-output "on_demand_asg_name" {
-  description = "On-demand Auto Scaling group backing the ECS capacity provider."
-  value       = aws_autoscaling_group.on_demand.name
 }
 
 output "spot_asg_name" {
   description = "Spot Auto Scaling group backing the ECS capacity provider."
   value       = aws_autoscaling_group.spot.name
+}
+
+output "launch_template_id" {
+  description = "Default launch template id."
+  value       = aws_launch_template.app.id
 }
