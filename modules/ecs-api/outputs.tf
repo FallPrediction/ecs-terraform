@@ -1,23 +1,5 @@
-output "alb_arn_suffix" {
-  value = aws_lb.api.arn_suffix
-}
-
 output "alb_dns_name" {
   value = aws_lb.api.dns_name
-}
-
-output "target_group_arn_suffix" {
-  value = aws_lb_target_group.api.arn_suffix
-}
-
-output "api_service_name" {
-  description = "ECS API service name."
-  value       = aws_ecs_service.api.name
-}
-
-output "api_service_arn" {
-  description = "ECS API service ARN."
-  value       = aws_ecs_service.api.arn
 }
 
 output "api_capacity_provider_name" {
