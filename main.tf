@@ -81,3 +81,38 @@ module "elasticache" {
     module.vpc
   ]
 }
+
+module "ecs" {
+  source = "./modules/ecs"
+
+  service_name              = var.service_name
+  environment               = var.environment
+  aws_region                = var.aws_region
+  efs_id                    = module.efs.efs_id
+  efs_access_point_id       = module.efs.efs_access_point_id
+  efs_security_group_id     = module.efs.efs_security_group_id
+  vpc_id                    = module.vpc.vpc_id
+  private_subnet_ids        = module.vpc.private_subnet_ids
+  bastion_security_group_id = module.vpc.bastion_security_group_id
+  rds_address               = module.rds.rds_address
+  db_name                   = var.db_name
+  db_username               = var.db_username
+  db_password               = var.db_password
+  redis_primary_address     = module.elasticache.redis_primary_address
+  app_key                   = var.app_key
+  ecs_instance_type         = var.ecs_instance_type
+  asg_min_size              = var.asg_min_size
+  asg_max_size              = var.asg_max_size
+  asg_desired_capacity      = var.asg_desired_capacity
+
+  providers = {
+    aws = aws.ap-east-2
+  }
+
+  depends_on = [
+    module.vpc,
+    module.rds,
+    module.efs,
+    module.elasticache
+  ]
+}
