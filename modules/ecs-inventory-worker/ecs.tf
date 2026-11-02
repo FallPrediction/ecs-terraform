@@ -119,7 +119,7 @@ resource "aws_ecs_service" "inventory_worker" {
 
   ordered_placement_strategy {
     type  = "binpack"
-    field = "memory"
+    field = "cpu"
   }
 
   deployment_circuit_breaker {

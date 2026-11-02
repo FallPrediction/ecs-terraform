@@ -161,3 +161,24 @@ variable "inventory_worker_max_count" {
   type    = number
   default = 2
 }
+
+variable "general_worker_asg_min_size" {
+  type = number
+}
+
+variable "general_worker_asg_max_size" {
+  type = number
+}
+
+variable "general_worker_asg_desired_capacity" {
+  type = number
+}
+
+variable "general_worker_desired_count" {
+  type = number
+}
+
+variable "general_worker_max_count" {
+  type    = number
+  default = 2
+}
