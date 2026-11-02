@@ -69,15 +69,3 @@ variable "app_key" {
 variable "ecs_instance_type" {
   type = string
 }
-
-variable "asg_min_size" {
-  type = number
-}
-
-variable "asg_max_size" {
-  type = number
-}
-
-variable "asg_desired_capacity" {
-  type = number
-}

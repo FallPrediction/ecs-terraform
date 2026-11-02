@@ -84,14 +84,26 @@ variable "efs_access_point_id" {
   description = "EFS Access Point ID"
 }
 
-variable "capacity_provider_on_demand_name" {
-  type = string
-}
-
 variable "capacity_provider_spot_name" {
   type = string
 }
 
 variable "private_subnet_ids" {
   type = list(string)
+}
+
+variable "api_asg_min_size" {
+  type = number
+}
+
+variable "api_asg_max_size" {
+  type = number
+}
+
+variable "api_asg_desired_capacity" {
+  type = number
+}
+
+variable "launch_template_id" {
+  type = string
 }
