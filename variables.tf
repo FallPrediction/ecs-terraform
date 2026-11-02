@@ -100,3 +100,25 @@ variable "asg_desired_capacity" {
     error_message = "ecs_desired_capacity must be between asg_min_size and asg_max_size."
   }
 }
+
+variable "laravel_image" {
+  type        = string
+  description = "Laravel ECR Image URI"
+}
+
+variable "nginx_image" {
+  type        = string
+  description = "Nginx ECR Image URI"
+}
+
+variable "api_desired_count" {
+  type        = number
+  description = "Desired API ECS service task count. Set to 2 for higher availability."
+  default     = 2
+}
+
+variable "api_max_count" {
+  type        = number
+  description = "Max API ECS service task count. Must higher than api_desired_count."
+  default     = 3
+}
