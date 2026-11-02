@@ -147,7 +147,6 @@ module "ecs-inventory-worker" {
   private_subnet_ids                    = module.vpc.private_subnet_ids
   launch_template_id                    = module.ecs.launch_template_id
   ecs_security_group_id                 = module.ecs.ecs_security_group_id
-  inventory_worker_asg_min_size         = var.inventory_worker_asg_min_size
   inventory_worker_asg_max_size         = var.inventory_worker_asg_max_size
   inventory_worker_asg_desired_capacity = var.inventory_worker_asg_desired_capacity
   inventory_worker_desired_count        = var.inventory_worker_desired_count
@@ -178,7 +177,6 @@ module "ecs-general-worker" {
   private_subnet_ids                  = module.vpc.private_subnet_ids
   launch_template_id                  = module.ecs.launch_template_id
   ecs_security_group_id               = module.ecs.ecs_security_group_id
-  general_worker_asg_min_size         = var.general_worker_asg_min_size
   general_worker_asg_max_size         = var.general_worker_asg_max_size
   general_worker_asg_desired_capacity = var.general_worker_asg_desired_capacity
   general_worker_desired_count        = var.general_worker_desired_count

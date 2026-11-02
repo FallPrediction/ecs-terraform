@@ -1,27 +1,239 @@
 # 將 ECS service general worker 註冊為可擴充目標
 resource "aws_appautoscaling_target" "general_worker" {
   max_capacity       = var.general_worker_max_count
-  min_capacity       = var.general_worker_desired_count
+  min_capacity       = 0
   resource_id        = "service/${var.cluster_name}/${aws_ecs_service.general_worker.name}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
 }
 
-resource "aws_appautoscaling_policy" "general_worker_cpu" {
-  name               = "general-worker-cpu-scaling"
+resource "aws_appautoscaling_policy" "general_worker_queue_invoice_target_tracking" {
+  name               = "general-worker-queue-invoice-scaling"
   policy_type        = "TargetTrackingScaling"
   resource_id        = aws_appautoscaling_target.general_worker.resource_id
   scalable_dimension = aws_appautoscaling_target.general_worker.scalable_dimension
   service_namespace  = aws_appautoscaling_target.general_worker.service_namespace
 
   target_tracking_scaling_policy_configuration {
-    predefined_metric_specification {
-      # See https://docs.aws.amazon.com/autoscaling/plans/APIReference/API_PredefinedScalingMetricSpecification.html
-      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    customized_metric_specification {
+      metrics {
+        label = "Get the queue size (the number of messages waiting to be processed)"
+        id    = "m1"
+
+        metric_stat {
+          metric {
+            metric_name = "redis_key_size"
+            namespace   = "ElastiCache/Prometheus"
+
+            dimensions {
+              name  = "job"
+              value = "redis_exporter"
+            }
+            dimensions {
+              name  = "db"
+              value = "db0"
+            }
+            dimensions {
+              name  = "key"
+              value = "laravel-database-queues:invoice"
+            }
+          }
+
+          stat = "Sum"
+        }
+
+        return_data = false
+      }
+
+      metrics {
+        label = "Get the running task count (matching the period to that of the m1)"
+        id    = "m2"
+
+        metric_stat {
+          metric {
+            metric_name = "RunningTaskCount"
+            namespace   = "ECS/ContainerInsights"
+
+            dimensions {
+              name  = "ServiceName"
+              value = "${var.service_name}-${var.environment}-general-worker"
+            }
+          }
+
+          stat = "Average"
+        }
+
+        return_data = false
+      }
+
+      # If queue size is null, return 0.
+      # Else if queue size and task count are 0, return 0.
+      # Else if task count is 0, return 1001(> target_value).
+      metrics {
+        label       = "QueueSizePerTask"
+        id          = "e1"
+        expression  = "IF(FILL(m2, 0) > 0, FILL(m1, 0) / FILL(m2, 0), IF(FILL(m1, 0) > 1, 1001, 0))"
+        return_data = true
+      }
     }
 
-    target_value       = 70
-    scale_in_cooldown  = 300
+    target_value       = 1000
+    scale_in_cooldown  = 120
     scale_out_cooldown = 30
+  }
+}
+
+# If queue size >= 1, then scale out.
+resource "aws_appautoscaling_policy" "general_worker_queue_invoice_step_scale_out" {
+  name               = "general-worker-queue-invoice-step-scale-out"
+  policy_type        = "StepScaling"
+  resource_id        = aws_appautoscaling_target.general_worker.resource_id
+  scalable_dimension = aws_appautoscaling_target.general_worker.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.general_worker.service_namespace
+
+  step_scaling_policy_configuration {
+    adjustment_type         = "ChangeInCapacity"
+    cooldown                = 30
+    metric_aggregation_type = "Average"
+
+    step_adjustment {
+      metric_interval_lower_bound = 0
+      scaling_adjustment          = 1
+    }
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "general_worker_queue_invoice_scale_out" {
+  alarm_name          = "general-worker-queue-invoice-scale-out"
+  alarm_description   = "Scale general worker out when the invoice queue has more than one message"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "redis_key_size"
+  namespace           = "ElastiCache/Prometheus"
+  period              = 60
+  statistic           = "Sum"
+  threshold           = 1
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_appautoscaling_policy.general_worker_queue_invoice_step_scale_out.arn]
+
+  dimensions = {
+    job = "redis_exporter"
+    db  = "db0"
+    key = "laravel-database-queues:invoice"
+  }
+}
+
+resource "aws_appautoscaling_policy" "general_worker_queue_notification_target_tracking" {
+  name               = "general-worker-queue-notification-scaling"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.general_worker.resource_id
+  scalable_dimension = aws_appautoscaling_target.general_worker.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.general_worker.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    customized_metric_specification {
+      metrics {
+        label = "Get the queue size (the number of messages waiting to be processed)"
+        id    = "m1"
+
+        metric_stat {
+          metric {
+            metric_name = "redis_key_size"
+            namespace   = "ElastiCache/Prometheus"
+
+            dimensions {
+              name  = "job"
+              value = "redis_exporter"
+            }
+            dimensions {
+              name  = "db"
+              value = "db0"
+            }
+            dimensions {
+              name  = "key"
+              value = "laravel-database-queues:notification"
+            }
+          }
+
+          stat = "Sum"
+        }
+
+        return_data = false
+      }
+
+      metrics {
+        label = "Get the running task count (matching the period to that of the m1)"
+        id    = "m2"
+
+        metric_stat {
+          metric {
+            metric_name = "RunningTaskCount"
+            namespace   = "ECS/ContainerInsights"
+
+            dimensions {
+              name  = "ServiceName"
+              value = "${var.service_name}-${var.environment}-general-worker"
+            }
+          }
+
+          stat = "Average"
+        }
+
+        return_data = false
+      }
+
+      # If queue size is null, return 0.
+      # Else if queue size and task count are 0, return 0.
+      # Else if task count is 0, return 1001(> target_value).
+      metrics {
+        label       = "QueueSizePerTask"
+        id          = "e1"
+        expression  = "IF(FILL(m2, 0) > 0, FILL(m1, 0) / FILL(m2, 0), IF(FILL(m1, 0) > 1, 1001, 0))"
+        return_data = true
+      }
+    }
+
+    target_value       = 1000
+    scale_in_cooldown  = 120
+    scale_out_cooldown = 30
+  }
+}
+
+resource "aws_appautoscaling_policy" "general_worker_queue_notification_step_scale_out" {
+  name               = "general-worker-queue-notification-step-scale-out"
+  policy_type        = "StepScaling"
+  resource_id        = aws_appautoscaling_target.general_worker.resource_id
+  scalable_dimension = aws_appautoscaling_target.general_worker.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.general_worker.service_namespace
+
+  step_scaling_policy_configuration {
+    adjustment_type         = "ChangeInCapacity"
+    cooldown                = 30
+    metric_aggregation_type = "Average"
+
+    step_adjustment {
+      metric_interval_lower_bound = 0
+      scaling_adjustment          = 1
+    }
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "general_worker_queue_notification_scale_out" {
+  alarm_name          = "general-worker-queue-notification-scale-out"
+  alarm_description   = "Scale general worker out when the notification queue has more than one message"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods  = 1
+  metric_name         = "redis_key_size"
+  namespace           = "ElastiCache/Prometheus"
+  period              = 60
+  statistic           = "Sum"
+  threshold           = 1
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = [aws_appautoscaling_policy.general_worker_queue_notification_step_scale_out.arn]
+
+  dimensions = {
+    job = "redis_exporter"
+    db  = "db0"
+    key = "laravel-database-queues:notification"
   }
 }
