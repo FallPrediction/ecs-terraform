@@ -1,5 +1,10 @@
 resource "aws_ecs_cluster" "app" {
   name = "${var.service_name}-${var.environment}"
+
+  setting {
+    name  = "containerInsights"
+    value = "enabled"
+  }
 }
 
 resource "aws_ecs_capacity_provider" "spot" {
