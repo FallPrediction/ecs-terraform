@@ -36,3 +36,18 @@ module "vpc" {
     aws = aws.ap-east-2
   }
 }
+
+module "rds" {
+  source = "./modules/rds"
+
+  service_name = var.service_name
+  environment  = var.environment
+  vpc_id       = module.vpc.vpc_id
+  db_password  = var.db_password
+  db_name      = var.db_name
+  db_username  = var.db_username
+
+  providers = {
+    aws = aws.ap-east-2
+  }
+}

@@ -47,3 +47,18 @@ variable "nat_instance_type" {
   description = "Small self-managed NAT instance type for production."
   default     = "t4g.nano"
 }
+
+variable "db_password" {
+  type      = string
+  sensitive = true
+}
+
+variable "db_name" {
+  type        = string
+  description = "RDS Database Name"
+}
+
+variable "db_username" {
+  type        = string
+  description = "RDS Username"
+}
