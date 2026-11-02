@@ -156,9 +156,17 @@ resource "aws_ecs_service" "api" {
   }
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.api.arn
+    target_group_arn = aws_lb_target_group.a.arn
     container_name   = "nginx"
     container_port   = 80
+
+    # ECS uses the alternate target group and production listener to shift
+    # traffic between the old (a) and new (b) service revisions.
+    advanced_configuration {
+      alternate_target_group_arn = aws_lb_target_group.b.arn
+      production_listener_rule   = aws_lb_listener_rule.api_production.arn
+      role_arn                   = aws_iam_role.load_balancer_management.arn
+    }
   }
 
   # 若 network mode 為 awsvpc，則必須設置 network_configuration
@@ -171,7 +179,7 @@ resource "aws_ecs_service" "api" {
   # AZ rebalancing enabled 時，max percent 必須 > 100
   availability_zone_rebalancing      = "ENABLED"
   deployment_minimum_healthy_percent = 50
-  deployment_maximum_percent         = 150
+  deployment_maximum_percent         = 200
 
   deployment_circuit_breaker {
     enable   = true
@@ -186,6 +194,22 @@ resource "aws_ecs_service" "api" {
   ordered_placement_strategy {
     type  = "binpack"
     field = "memory"
+  }
+
+  deployment_configuration {
+    strategy             = "CANARY"
+    bake_time_in_minutes = 10
+
+    canary_configuration {
+      canary_percent              = 50.0 # prod 環境建議設 5 - 10 等較低數字
+      canary_bake_time_in_minutes = 5
+    }
+  }
+
+  alarms {
+    alarm_names = [aws_cloudwatch_metric_alarm.api_alb_5xx.alarm_name]
+    enable      = true
+    rollback    = true
   }
 
   lifecycle {

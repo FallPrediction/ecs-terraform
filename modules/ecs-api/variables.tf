@@ -44,6 +44,12 @@ variable "api_max_count" {
   type = number
 }
 
+variable "api_alb_5xx_threshold" {
+  type        = number
+  description = "Maximum ALB-generated 5xx responses allowed in one minute during an API deployment. ECS rolls back when this value is exceeded."
+  default     = 5
+}
+
 variable "public_subnet_ids" {
   type = list(string)
 }

@@ -18,7 +18,7 @@ resource "aws_appautoscaling_policy" "api" {
     predefined_metric_specification {
       # See https://docs.aws.amazon.com/autoscaling/plans/APIReference/API_PredefinedScalingMetricSpecification.html
       predefined_metric_type = "ALBRequestCountPerTarget"
-      resource_label         = "${aws_lb.api.arn_suffix}/${aws_lb_target_group.api.arn_suffix}"
+      resource_label         = "${aws_lb.api.arn_suffix}/${aws_lb_target_group.a.arn_suffix}"
     }
 
     target_value       = 5000 # 視情況調整
